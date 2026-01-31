@@ -17,7 +17,6 @@ export type AuthChoiceGroupId =
   | "moonshot"
   | "zai"
   | "xiaomi"
-  | "zhipu"
   | "opencode-zen"
   | "minimax"
   | "synthetic"
@@ -84,12 +83,6 @@ const AUTH_CHOICE_GROUP_DEFS: {
     label: "Z.AI (GLM 4.7)",
     hint: "API key",
     choices: ["zai-api-key"],
-  },
-  {
-    value: "zhipu",
-    label: "Zhipu AI",
-    hint: "GLM-4.7",
-    choices: ["zhipu-api-key"],
   },
   {
     value: "copilot",
@@ -178,10 +171,6 @@ export function buildAuthChoiceOptions(params: {
     hint: "Uses the bundled Gemini CLI auth plugin",
   });
   options.push({ value: "zai-api-key", label: "Z.AI (GLM 4.7) API key" });
-  options.push({
-    value: "zhipu-api-key",
-    label: "Zhipu AI (GLM-4.7) API key",
-  });
   options.push({
     value: "xiaomi-api-key",
     label: "Xiaomi API key",
