@@ -30,6 +30,8 @@ import {
   applyXiaomiConfig,
   applyXiaomiProviderConfig,
   applyZaiConfig,
+  applyZhipuConfig,
+  applyZhipuProviderConfig,
   KIMI_CODING_MODEL_REF,
   MOONSHOT_DEFAULT_MODEL_REF,
   OPENROUTER_DEFAULT_MODEL_REF,
@@ -37,6 +39,7 @@ import {
   VENICE_DEFAULT_MODEL_REF,
   VERCEL_AI_GATEWAY_DEFAULT_MODEL_REF,
   XIAOMI_DEFAULT_MODEL_REF,
+  ZHIPU_DEFAULT_MODEL_REF,
   setGeminiApiKey,
   setKimiCodingApiKey,
   setMoonshotApiKey,
@@ -47,6 +50,7 @@ import {
   setVercelAiGatewayApiKey,
   setXiaomiApiKey,
   setZaiApiKey,
+  setZhipuApiKey,
   ZAI_DEFAULT_MODEL_REF,
 } from "./onboard-auth.js";
 import { OPENCODE_ZEN_DEFAULT_MODEL } from "./opencode-zen-model-default.js";
@@ -90,6 +94,8 @@ export async function applyAuthChoiceApiProviders(
       authChoice = "zai-api-key";
     } else if (params.opts.tokenProvider === "xiaomi") {
       authChoice = "xiaomi-api-key";
+    } else if (params.opts.tokenProvider === "zhipu") {
+      authChoice = "zhipu-api-key";
     } else if (params.opts.tokenProvider === "synthetic") {
       authChoice = "synthetic-api-key";
     } else if (params.opts.tokenProvider === "venice") {
@@ -486,6 +492,54 @@ export async function applyAuthChoiceApiProviders(
         applyDefaultConfig: applyXiaomiConfig,
         applyProviderConfig: applyXiaomiProviderConfig,
         noteDefault: XIAOMI_DEFAULT_MODEL_REF,
+        noteAgentModel,
+        prompter: params.prompter,
+      });
+      nextConfig = applied.config;
+      agentModelOverride = applied.agentModelOverride ?? agentModelOverride;
+    }
+    return { config: nextConfig, agentModelOverride };
+  }
+
+  if (authChoice === "zhipu-api-key") {
+    let hasCredential = false;
+
+    if (!hasCredential && params.opts?.token && params.opts?.tokenProvider === "zhipu") {
+      await setZhipuApiKey(normalizeApiKeyInput(params.opts.token), params.agentDir);
+      hasCredential = true;
+    }
+
+    const envKey = resolveEnvApiKey("zhipu");
+    if (envKey) {
+      const useExisting = await params.prompter.confirm({
+        message: `Use existing ZHIPU_API_KEY (${envKey.source}, ${formatApiKeyPreview(envKey.apiKey)})?`,
+        initialValue: true,
+      });
+      if (useExisting) {
+        await setZhipuApiKey(envKey.apiKey, params.agentDir);
+        hasCredential = true;
+      }
+    }
+    if (!hasCredential) {
+      const key = await params.prompter.text({
+        message: "Enter Zhipu AI API key",
+        validate: validateApiKeyInput,
+      });
+      await setZhipuApiKey(normalizeApiKeyInput(String(key)), params.agentDir);
+    }
+    nextConfig = applyAuthProfileConfig(nextConfig, {
+      profileId: "zhipu:default",
+      provider: "zhipu",
+      mode: "api_key",
+    });
+    {
+      const applied = await applyDefaultModelChoice({
+        config: nextConfig,
+        setDefaultModel: params.setDefaultModel,
+        defaultModel: ZHIPU_DEFAULT_MODEL_REF,
+        applyDefaultConfig: applyZhipuConfig,
+        applyProviderConfig: applyZhipuProviderConfig,
+        noteDefault: ZHIPU_DEFAULT_MODEL_REF,
         noteAgentModel,
         prompter: params.prompter,
       });

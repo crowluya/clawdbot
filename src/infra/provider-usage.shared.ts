@@ -12,6 +12,7 @@ export const PROVIDER_LABELS: Record<UsageProviderId, string> = {
   "openai-codex": "Codex",
   xiaomi: "Xiaomi",
   zai: "z.ai",
+  zhipu: "Zhipu",
 };
 
 export const usageProviders: UsageProviderId[] = [
@@ -23,6 +24,7 @@ export const usageProviders: UsageProviderId[] = [
   "openai-codex",
   "xiaomi",
   "zai",
+  "zhipu",
 ];
 
 export function resolveUsageProviderId(provider?: string | null): UsageProviderId | undefined {

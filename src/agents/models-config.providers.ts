@@ -76,6 +76,17 @@ const OLLAMA_DEFAULT_COST = {
   cacheWrite: 0,
 };
 
+const ZHIPU_BASE_URL = "https://open.bigmodel.cn/api/paas/v4";
+export const ZHIPU_DEFAULT_MODEL_ID = "glm-4.7";
+const ZHIPU_DEFAULT_CONTEXT_WINDOW = 128000;
+const ZHIPU_DEFAULT_MAX_TOKENS = 8192;
+const ZHIPU_DEFAULT_COST = {
+  input: 0,
+  output: 0,
+  cacheRead: 0,
+  cacheWrite: 0,
+};
+
 interface OllamaModel {
   name: string;
   modified_at: string;
@@ -376,6 +387,24 @@ export function buildXiaomiProvider(): ProviderConfig {
   };
 }
 
+export function buildZhipuProvider(): ProviderConfig {
+  return {
+    baseUrl: ZHIPU_BASE_URL,
+    api: "openai-completions",
+    models: [
+      {
+        id: ZHIPU_DEFAULT_MODEL_ID,
+        name: "GLM-4.7",
+        reasoning: false,
+        input: ["text"],
+        cost: ZHIPU_DEFAULT_COST,
+        contextWindow: ZHIPU_DEFAULT_CONTEXT_WINDOW,
+        maxTokens: ZHIPU_DEFAULT_MAX_TOKENS,
+      },
+    ],
+  };
+}
+
 async function buildVeniceProvider(): Promise<ProviderConfig> {
   const models = await discoverVeniceModels();
   return {
@@ -451,6 +480,13 @@ export async function resolveImplicitProviders(params: {
     resolveApiKeyFromProfiles({ provider: "xiaomi", store: authStore });
   if (xiaomiKey) {
     providers.xiaomi = { ...buildXiaomiProvider(), apiKey: xiaomiKey };
+  }
+
+  const zhipuKey =
+    resolveEnvApiKeyVarName("zhipu") ??
+    resolveApiKeyFromProfiles({ provider: "zhipu", store: authStore });
+  if (zhipuKey) {
+    providers.zhipu = { ...buildZhipuProvider(), apiKey: zhipuKey };
   }
 
   // Ollama provider - only add if explicitly configured
